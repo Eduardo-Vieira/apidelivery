@@ -4,6 +4,7 @@ import br.com.api.delivery.model.Produto
 import br.com.api.delivery.repository.ProdutoRepository
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import javax.persistence.criteria.CriteriaBuilder
 
 @RestController
 @RequestMapping("/produtos")
@@ -24,8 +25,8 @@ class ProdutoController(val produtoRepository: ProdutoRepository) {
 
     // Add Produto
     @PostMapping
-    fun create(@RequestBody produto: Produto?): Produto? {
-        return produtoRepository.save(produto)
+    fun create(@RequestBody produto: Produto?): ResponseEntity<Produto>? {
+        return ResponseEntity.ok().body(produtoRepository.save(produto))
     }
 
     // update Produto
@@ -38,6 +39,17 @@ class ProdutoController(val produtoRepository: ProdutoRepository) {
                     record.price = produto.price
                     val updated: Produto = produtoRepository.save(record)
                     ResponseEntity.ok().body(updated)
+                }
+                .orElse(ResponseEntity.notFound().build())
+    }
+
+    // delete Produto
+    @DeleteMapping("/{id}")
+    fun delete(@PathVariable id:Long): ResponseEntity<Produto>? {
+        return produtoRepository.findById(id)
+                .map { record ->
+                    produtoRepository.deleteById(id)
+                    ResponseEntity.ok().body(record)
                 }
                 .orElse(ResponseEntity.notFound().build())
     }
